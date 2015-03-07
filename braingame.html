@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<!--
+ Partly using code for Csound pnacl interactive example
+ by  V Lazzarini
+-->
+<html>
+  <head>
+	<title>Braingame client</title>
+	<meta content="text/html; charset=utf-8" http-equiv="content-type">
+	<meta content="Tarmo Johannes" id="author">
+    <style></style>
+   <script src="ws-functions.js"></script> <!-- websocket functions -->
+   <script>
+   
+	function send2server(messageType, content) { // type: csound / message /
+		var messageString = messageType + "*" + document.myform.name.value + "*" + content;
+		console.log(messageString);
+		doSend(messageString);
+		
+	}
+	function code2server() {
+		var code = document.myform.code;
+		var selected = code.value.substring(code.selectionStart,code.selectionEnd);
+		send2server("csound",selected);
+	}
+
+	
+
+	window.onload = function(){
+		//var connectButton = document.getElementById("connectButton");
+		//myform.sendButton.disabled = true;
+		doConnect(); // init websocket on start; suppose the server is ready
+	};
+
+   </script>
+  </head>
+  <body>
+  <h1>Braingame client</h1>
+  <form name="myform">
+  Your name: <input type="text" id="name" value="Tarmo"></input><br>
+	<button id="playButton">Start Engine</button>
+  <button id="pauseButton">Pause Engine</button> </p>
+  Code:<br>
+  <p> 
+  <textarea class="code" id="code" cols="80" rows="20" id="orchestraField">
+; press "Compile All" to compile this code, 
+; if Csound is running you will hear white noise.
+; This is an edit box, you can change the code
+; and compile again with the buttons below.
+
+schedule 1,0,1
+
+instr 1
+ a1 rand 0.5
+ out a1
+endin
+  </textarea>
+
+  <br>
+  <button type="button" id="compileButton1">Compile All</button>
+  <button type="button" id="compileButton2">Compile Selection</button> 
+  <button type="button" id="sendButton" onclick='code2server();'>Send Selection to server</button> 
+  <p>
+  <input type="file" id="files" name="file" /> 
+  <button type="button" id="loadButton">load to ./local</button>
+  </p>
+  
+  Message to others (not displayed in chat)<input type="text" id="message" value="message"></input>
+  <button  type="button" id="sendMessage" onclick='send2server("message",document.myform.message.value);'>Send</button>
+  <br>
+  Comment (displayed in chat but not compiled)<input type="text" id="comment" value="comment"></input>
+	<button  type="button" id="sendMessage" onclick='send2server("comment",document.myform.comment.value);'>Send</button>	
+
+	<br>
+  
+  Server address: <input value="ws://localhost:10010/ws" id="url" type="text"><br>
+    <button type="button" id="connectButton" onclick="doConnect();">Connect</button>
+    <br>
+    Messages from WS server<br>
+    <p><textarea id="outputtext" rows="5" cols="80" readonly></textarea> </p>
+	</form>
+	
+	
+ </body>
+</html>
