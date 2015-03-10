@@ -18,6 +18,7 @@ ApplicationWindow {
                     console.log("Message came in: ",messageString, "from: ",name);
 
                     messageArea.text +=  name + " says: " + messageString + "\n";
+                    messageArea.cursorPosition = messageArea.length;
 
                 }
               }

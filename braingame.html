@@ -9,8 +9,93 @@
 	<meta content="text/html; charset=utf-8" http-equiv="content-type">
 	<meta content="Tarmo Johannes" id="author">
     <style></style>
+    
+   <script type="text/javascript" src="csound.js"></script> 
    <script src="ws-functions.js"></script> <!-- websocket functions -->
-   <script>
+   
+   <script type="text/javascript">
+   // csound functions (code by Victor Lazzarini)
+   var orchval, selection;
+
+    // functions called by csound.js
+    function moduleDidLoad() {
+
+		document.getElementById('files').addEventListener('change', handleFileSelect, false);
+    }
+
+    function attachListeners() {
+       document.getElementById('playButton').addEventListener('click', csound.Play);
+       document.getElementById('pauseButton').addEventListener('click',csound.Pause);
+       document.getElementById('loadButton').addEventListener('click', loadFile);
+       document.getElementById('compileButton1').addEventListener('click', compileOrc1);
+       document.getElementById('compileButton2').addEventListener('click', compileOrc2);
+       document.getElementById('code').addEventListener('blur',changeOrchestra);
+       document.getElementById('code').addEventListener('select',selectOrchestra);
+       orchval = getOrchestraElement().value;
+    }
+   
+    var count = 0;
+    function handleMessage(message) {
+        var element = document.getElementById('outputtext');
+        element.value += message.data;
+        element.scrollTop = 99999; // focus on bottom
+        count += 1;
+        if(count == 1000) {
+           element.value = ' ';
+           count = 0;
+        }
+    }
+    
+    // event handlers for the html page
+    function getOrchestraElement() {
+      return document.getElementById('code');
+    }
+
+    function compileOrc1() {
+       csound.CompileOrc(orchval); 
+    }
+
+    function compileOrc2() {
+       orchval = selection;
+       csound.CompileOrc(orchval);
+    }
+
+   function changeOrchestra() {    
+       orchval = getOrchestraElement().value;
+    }
+
+   function getText(elem) {
+       if(elem.tagName === "TEXTAREA" ||
+         (elem.tagName === "INPUT" && elem.type === "text")) {
+           return elem.value.substring(elem.selectionStart,
+                                       elem.selectionEnd);
+        }
+        return null;
+    }
+
+    function selectOrchestra() {
+        selection = getText(document.activeElement);  
+    }
+  
+  var fname = '';
+  var objectURL;
+  function handleFileSelect(evt) {
+    var files = evt.target.files; 
+    var f = files[0];
+    objectURL = window.webkitURL.createObjectURL(f);
+    fname = f.name;
+    document.getElementById('loadButton').innerText = 'load to ./local/' + fname;
+  }
+
+   function loadFile(){
+    if(fname != ''){
+     csound.CopyUrlToLocal(objectURL, fname);
+     document.getElementById('loadButton').innerText = './local/' + fname +
+     ' loaded' ;
+    }
+   }
+   
+   // UI and other websocket functions
    
 	function send2server(messageType, content) { // type: csound / message /
 		var messageString = messageType + "*" + document.myform.name.value + "*" + content;
@@ -20,15 +105,27 @@
 	}
 	function code2server() {
 		var code = document.myform.code;
-		var selected = code.value.substring(code.selectionStart,code.selectionEnd);
-		send2server("csound",selected);
+		if (code.selectionStart==code.selectionEnd) // nothing selected - take the whole orchestra
+			alert("Nothing selected!");
+		else {
+			var selected = code.value.substring(code.selectionStart,code.selectionEnd);
+			send2server("csound",selected); 
+		}
 	}
 
 	
 
 	window.onload = function(){
 		//var connectButton = document.getElementById("connectButton");
-		//myform.sendButton.disabled = true;
+		//document.myform.sendButton.disabled = true;
+
+		var name = localStorage.getItem("brain-client-name");
+		if (name)  { // if not set, generate an uuid for it
+			console.log("Sored name: ", name);
+			document.myform.name.value = name;
+		} 
+		
+		
 		doConnect(); // init websocket on start; suppose the server is ready
 	};
 
@@ -37,12 +134,12 @@
   <body>
   <h1>Braingame client</h1>
   <form name="myform">
-  Your name: <input type="text" id="name" value="Tarmo"></input><br>
-	<button id="playButton">Start Engine</button>
-  <button id="pauseButton">Pause Engine</button> </p>
+  Your name: <input type="text" id="name" value="Tarmo" onchange='localStorage.setItem("brain-client-name",this.value);'></input><br>
+	<button type="button" id="playButton">Start Engine</button>
+  <button type="button" id="pauseButton">Pause Engine</button> </p>
   Code:<br>
   <p> 
-  <textarea class="code" id="code" cols="80" rows="20" id="orchestraField">
+  <textarea class="code" id="code" cols="80" rows="16">
 ; press "Compile All" to compile this code, 
 ; if Csound is running you will hear white noise.
 ; This is an edit box, you can change the code
@@ -65,10 +162,10 @@ endin
   <button type="button" id="loadButton">load to ./local</button>
   </p>
   
-  Message to others (not displayed in chat)<input type="text" id="message" value="message"></input>
+  Message to others (not displayed on big screen)<input type="text" id="message" value="message"></input>
   <button  type="button" id="sendMessage" onclick='send2server("message",document.myform.message.value);'>Send</button>
   <br>
-  Comment (displayed in chat but not compiled)<input type="text" id="comment" value="comment"></input>
+  Message to display (like "Hello" "Please stop" etc)<input type="text" id="comment" value="comment"></input>
 	<button  type="button" id="sendMessage" onclick='send2server("comment",document.myform.comment.value);'>Send</button>	
 
 	<br>
@@ -76,10 +173,12 @@ endin
   Server address: <input value="ws://localhost:10010/ws" id="url" type="text"><br>
     <button type="button" id="connectButton" onclick="doConnect();">Connect</button>
     <br>
-    Messages from WS server<br>
-    <p><textarea id="outputtext" rows="5" cols="80" readonly></textarea> </p>
+    Messages from WS server and Csound:<br>
+    <p><textarea id="outputtext" rows="8" cols="80" readonly></textarea> </p>
 	</form>
 	
+	<!--pNaCl csound module-->
+  <div id="engine"></div>
 	
  </body>
 </html>
