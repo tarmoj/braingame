@@ -1,12 +1,20 @@
 #include "csengine.h"
 #include <QDebug>
 
+#define PORT 7077
 
 CsEngine::CsEngine(char *csd)
 {
     mStop=false;
     m_csd = csd;
     errorValue=0;
+    // UDP server to receive messages from other computer
+    socket = new QUdpSocket(this); // The most common way to use QUdpSocket class is // to bind to an address and port using bind() // bool QAbstractSocket::bind(const QHostAddress & address, // quint16 port = 0, BindMode mode = DefaultForPlatform)
+    socket->bind(QHostAddress::Any, 7077);
+    qDebug()<<"Listening for UDP messages on port 7077";
+    connect(socket, SIGNAL(readyRead()), this, SLOT(readyRead()));
+
+
 }
 
 
@@ -17,6 +25,24 @@ CsEngine::~CsEngine()
 
 }
 
+
+void CsEngine::readyRead()
+{
+     QByteArray buffer; buffer.resize(socket->pendingDatagramSize());
+     QHostAddress sender;
+     quint16 senderPort;
+
+     socket->readDatagram(buffer.data(), buffer.size(), &sender, &senderPort);
+
+     //qDebug() << "UDP Message: " << buffer;
+     QString message = QString(buffer);
+     QStringList messageParts = message.split(","); // constructed: "sensor",channel, value, ie. "sensor,attention1,0.5"
+    if (message.startsWith("sensor")) {
+        setChannel(messageParts[1], messageParts[2].toDouble());
+        //TODO: send to qml meters
+    }
+
+}
 
 
 //Csound *CsEngine::getCsound() {return &cs;}

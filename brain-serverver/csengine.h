@@ -4,7 +4,7 @@
 #include <QThread>
 #include <csound/csound.hpp>
 #include <csound/csPerfThread.hpp>
-//#include <QMutex>
+#include <QUdpSocket>
 
 
 class CsEngine : public QThread
@@ -16,9 +16,9 @@ private:
     char *m_csd;
     int errorValue;
     QString errorString;
-    int sliderCount;
 
-    //QMutex mutex;
+    QUdpSocket *socket;
+
 
 public:
     explicit CsEngine(char *csd);
@@ -44,6 +44,7 @@ public slots:
 	int compileOrc(QString code);
 	void restart(); // does not work though
 	void handleChannelChange(QString channel, MYFLT value);
+    void readyRead();
 };
 
 #endif // CSENGINE_H
