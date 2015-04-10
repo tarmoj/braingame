@@ -20,6 +20,7 @@ WsServer::WsServer(quint16 port, QObject *parent) :
         connect(m_pWebSocketServer, &QWebSocketServer::closed, this, &WsServer::closed);
     }
     cs = new CsEngine("../braingame.csd"); cs->start();
+	QObject::connect(cs,SIGNAL(newSensorValue(QString,double)),this, SLOT(handleSensorValue(QString,double)));
 
 
 }
@@ -56,11 +57,12 @@ void WsServer::processTextMessage(QString message)
 
 	// messages that come in: csound,name,code2compile; comment,display,comment_text (- display, don't compile; message, name,
 
-    QStringList messageParts = message.split("*");
+	QStringList messageParts = message.split("@");
 	QString name = messageParts[1];
 	if (message.startsWith("csound")) { // send code to compile and return result to caller
 		QString code = messageParts[2];
 		emit newMessage(name,code);
+		sendToAll("csound@"+name+"@"+code);
         int result = cs->compileOrc(code);
 		// if (!result)
 		QString returnMessage = (result) ? "Error" : "OK";
@@ -71,7 +73,7 @@ void WsServer::processTextMessage(QString message)
 		emit newMessage(name,comment);
         //sendToAll(name+":"+comment, pClient);
     } else if (message.startsWith("message")) {  // don't display, only to peers
-        sendToAll(name+":"+messageParts[2], pClient);
+		sendToAll("message@"+name+":"+messageParts[2], pClient);
     }
 
 
@@ -99,10 +101,17 @@ void WsServer::socketDisconnected()
 	}
 }
 
+void WsServer::handleSensorValue(QString sensor, double value)
+{
+	if (sensor.startsWith("attention") || sensor.startsWith("lb") || sensor.startsWith("hb") ||sensor.startsWith("skin") )
+		sendToAll("sensor@ " + sensor + "@"+QString::number(value));
+	emit forwardSensorValue(sensor,value); // send to qml
+}
+
 void WsServer::sendToAll(QString message, QWebSocket *sender)
 {
 	foreach (QWebSocket *socket, m_clients) {
-		if ( sender != NULL && socket != sender) // if sender is set, don't send back to itself
+		//if (sender != NULL && socket != sender ) // if sender is set, don't send back to itself
 			socket->sendTextMessage(message);
 	}
 }

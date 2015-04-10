@@ -10,10 +10,10 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
 
 	WsServer *wsServer;
-	wsServer = new WsServer(10010);
+	wsServer = new WsServer(8080); // was 10010
 
 	//bind object before load
-	engine.rootContext()->setContextProperty("wsServer", wsServer); // forward c++ object that can be reached form qml by object name "csound"
+	engine.rootContext()->setContextProperty("wsServer", wsServer); // forward c++ object that can be reached form qml by object name
 
 	engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 

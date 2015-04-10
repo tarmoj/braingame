@@ -98,7 +98,7 @@
    // UI and other websocket functions
    
 	function send2server(messageType, content) { // type: csound / message /
-		var messageString = messageType + "*" + document.myform.name.value + "*" + content;
+		var messageString = messageType + "@" + document.myform.name.value + "@" + content;
 		console.log(messageString);
 		doSend(messageString);
 		
@@ -128,6 +128,35 @@
 		
 		doConnect(); // init websocket on start; suppose the server is ready
 	};
+	
+	function onMessage(evt)
+	{	
+		var message = evt.data + "\n";
+		writeToScreen("Message from server: " + message);
+		var messageParts = message.split("@");
+		
+		if (messageParts[0]=="message") { // message from other player
+			var chatArea = document.getElementById("chat");
+			chatArea.value += messageParts[1];
+			chatArea.scrollTop = chatArea.scrollHeight;
+		}
+		
+		
+		if (messageParts[0]=="csound") { // code from other players
+			
+			var commandsArea = document.getElementById("command");
+			commandsArea.value += messageParts[1] + ":" + messageParts[2] + "\n";
+			commandsArea.scrollTop = commandsArea.scrollHeight;
+		}
+		
+		if (messageParts[0]=="sensor") { // code from other players
+			var sensorArea = document.getElementById("sensors");
+			sensorArea.value += messageParts[1] + ":" + messageParts[2];
+			sensorArea.scrollTop = sensorArea.scrollHeight;
+		}
+		
+		//TODO: if message from peers // sensor values
+	}
 
    </script>
   </head>
@@ -214,16 +243,28 @@ endin
   <input type="file" id="files" name="file" /> 
   <button type="button" id="loadButton">load to ./local</button>
   </p>
-  
+  Commands of other players:<br>
+  <textarea class="code" id="command" cols="80" rows="4">
+
+  </textarea>
+  <br>
+  Messages from others:<br>
+  <textarea class="code" id="chat" cols="80" rows="4">
+  </textarea>
+  <br>
+  Sensors:<br>
+  <textarea class="code" id="sensors" cols="80" rows="4">
+  </textarea><br>
+  <br>
   Message to others (not displayed on big screen)<input type="text" id="message" value="message"></input>
   <button  type="button" id="sendMessage" onclick='send2server("message",document.myform.message.value);'>Send</button>
-  <br>
+  <br><br>
   Message to display (like "Hello" "Please stop" etc)<input type="text" id="comment" value="comment"></input>
 	<button  type="button" id="sendMessage" onclick='send2server("comment",document.myform.comment.value);'>Send</button>	
 
-	<br>
+	<br><br>
   
-  Server address: <input value="ws://localhost:10010/ws" id="url" type="text"><br>
+  Server address: <input value="ws://johannes.homeip.net:8080/ws" id="url" type="text"><br>
     <button type="button" id="connectButton" onclick="doConnect();">Connect</button>
     <br>
     Messages from WS server and Csound:<br>

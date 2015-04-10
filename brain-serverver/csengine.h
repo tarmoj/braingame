@@ -35,8 +35,9 @@ public:
     double getChannel(QString);
     Csound *getCsound();
 signals:
-	void sendNewPattern(int voice); // sent when a new pattern can be sent for the voice
-	void channelValue(int voice, int value); // TeST only
+	//void sendNewPattern(int voice); // sent when a new pattern can be sent for the voice
+	//void channelValue(int voice, int value); // TeST only
+	void newSensorValue(QString sensor, double value);
 
 public slots:
 	void handleMessage(QString message); //

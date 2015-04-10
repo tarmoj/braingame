@@ -47,10 +47,7 @@
 			writeToScreen("WebSocket is not open!");
 	}
 	
-	function onMessage(evt)
-	{
-		writeToScreen("Message from server: " + evt.data + '\n');
-	}
+	
 
 	
 	function writeToScreen(message)

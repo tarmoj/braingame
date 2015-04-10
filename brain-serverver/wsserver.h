@@ -29,6 +29,7 @@ Q_SIGNALS:
     void closed();
     void newConnection(int connectionsCount);
 	void newMessage(QString name, QString messageString);
+	void forwardSensorValue(QString sensor, double value);
 
 
 
@@ -37,6 +38,7 @@ private Q_SLOTS:
     void processTextMessage(QString message);
     //void processBinaryMessage(QByteArray message);
     void socketDisconnected();
+	void handleSensorValue(QString sensor, double value);
 
 
 private:

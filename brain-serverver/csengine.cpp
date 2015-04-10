@@ -34,11 +34,14 @@ void CsEngine::readyRead()
 
      socket->readDatagram(buffer.data(), buffer.size(), &sender, &senderPort);
 
-     //qDebug() << "UDP Message: " << buffer;
+	 //qDebug() << "UDP Message: " << buffer;
      QString message = QString(buffer);
      QStringList messageParts = message.split(","); // constructed: "sensor",channel, value, ie. "sensor,attention1,0.5"
     if (message.startsWith("sensor")) {
-        setChannel(messageParts[1], messageParts[2].toDouble());
+		QString sensor = messageParts[1];
+		double value =  messageParts[2].toDouble();
+		setChannel(sensor,value);
+		emit newSensorValue(sensor,value);
         //TODO: send to qml meters
     }
 
@@ -66,18 +69,7 @@ void CsEngine::run()
 
 	while (!mStop  && perfThread.GetStatus() == 0 ) {
 		usleep(10000);  // ? et ei teeks tööd kogu aeg
-		for (int i=0;i<3;i++) {
-			active[i] = getChannel("active"+QString::number(i+1));
-			if (active[i]!=oldActive[i]) {
-				emit channelValue(i,active[i]); // TEST
-
-				if (active[i]==0) { // instruments has ended
-					qDebug()<<"Active "<<i<<" "<<active[i];
-					emit sendNewPattern(i);
-				}
-				oldActive[i] = active[i];
-			}
-		}
+		// do we need anything here?
 	}
     qDebug()<<"Stopping thread";
     perfThread.Stop();

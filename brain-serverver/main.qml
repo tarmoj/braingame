@@ -21,7 +21,14 @@ ApplicationWindow {
                     messageArea.cursorPosition = messageArea.length;
 
                 }
+                onForwardSensorValue: {
+                    console.log("sensor:",sensor," value: ",value)
+                    sensorsArea.text +=  sensor + " "+ value + "\n";
+                    sensorsArea.cursorPosition = sensorsArea.length;
+
+                }
               }
+
 
 
     Rectangle {
@@ -67,6 +74,16 @@ ApplicationWindow {
             x: 363
             y: 38
             text: qsTr("Sensors:")
+        }
+
+        TextArea {
+            id: sensorsArea
+            x: 363
+            y: 58
+            width: 250
+            height: 391
+            readOnly: true
+            wrapMode: TextEdit.WordWrap
         }
     }
 
