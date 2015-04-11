@@ -20,9 +20,11 @@ public:
 
     void sendMessage(QWebSocket *socket, QString message);
 	//void sendFirstMessage(int voice); // sends signals and necessary info about first message in the que to UI and Csound
+	void setQmlObject(QObject *object);
 
 
 public Q_SLOTS:
+	void handleSensorValue(QString sensor, double value);
 
 
 Q_SIGNALS:
@@ -38,7 +40,7 @@ private Q_SLOTS:
     void processTextMessage(QString message);
     //void processBinaryMessage(QByteArray message);
     void socketDisconnected();
-	void handleSensorValue(QString sensor, double value);
+
 
 
 private:
@@ -46,6 +48,7 @@ private:
     QList<QWebSocket *> m_clients;
 	void sendToAll(QString message, QWebSocket *sender = NULL );
 	CsEngine *cs;
+	QObject *qmlObject;
 
 };
 

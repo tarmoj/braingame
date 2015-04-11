@@ -2,6 +2,10 @@
 #include "QtWebSockets/qwebsocketserver.h"
 #include "QtWebSockets/qwebsocket.h"
 #include <QDebug>
+#include <QFile>
+#include <QDateTime>
+
+#define LOGFILE "received-messages.log"
 
 
 QT_USE_NAMESPACE
@@ -21,6 +25,7 @@ WsServer::WsServer(quint16 port, QObject *parent) :
     }
     cs = new CsEngine("../braingame.csd"); cs->start();
 	QObject::connect(cs,SIGNAL(newSensorValue(QString,double)),this, SLOT(handleSensorValue(QString,double)));
+	qmlObject = NULL;
 
 
 }
@@ -61,6 +66,16 @@ void WsServer::processTextMessage(QString message)
 	QString name = messageParts[1];
 	if (message.startsWith("csound")) { // send code to compile and return result to caller
 		QString code = messageParts[2];
+
+		QFile logFile(LOGFILE);
+		if (logFile.open(QIODevice::Append)) {
+			logFile.write((QDateTime::currentDateTime().toString("dd.MM.yy hh:mm:ss")+" "+name).toLocal8Bit()+"\n");
+			//TODO: add country from IP
+			logFile.write("\t"+code.toLocal8Bit()+"\n");
+			logFile.close();
+		} else
+			qDebug()<<"Could not open logfile "<<LOGFILE;
+
 		emit newMessage(name,code);
 		sendToAll("csound@"+name+"@"+code);
         int result = cs->compileOrc(code);
@@ -105,7 +120,13 @@ void WsServer::handleSensorValue(QString sensor, double value)
 {
 	if (sensor.startsWith("attention") || sensor.startsWith("lb") || sensor.startsWith("hb") ||sensor.startsWith("skin") )
 		sendToAll("sensor@ " + sensor + "@"+QString::number(value));
-	emit forwardSensorValue(sensor,value); // send to qml
+	//emit forwardSensorValue(sensor,value); // send to qml
+	if (qmlObject) {
+		QObject * item = qmlObject->findChild<QObject*>(sensor);
+		if (item)
+			item->setProperty("level", value);
+		//qmlObject->setProperty(sensor.toLocal8Bit().data(),value);
+	}
 }
 
 void WsServer::sendToAll(QString message, QWebSocket *sender)
@@ -125,6 +146,12 @@ void WsServer::sendMessage(QWebSocket *socket, QString message )
     }
     socket->sendTextMessage(message);
 
+}
+
+void WsServer::setQmlObject(QObject *object)
+{
+	qmlObject = object;
+	//csdText = qmlObject->findChild<QObject*>("csdText"); // must be set in qml as property objectName: "csdText"
 }
 
 

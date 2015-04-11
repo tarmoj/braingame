@@ -18,17 +18,12 @@ int main(int argc, char *argv[])
 	engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
 
-	//QObject *mainQml = engine.rootObjects().first(); // to access qml-s properties
+	QObject *mainQml = engine.rootObjects().first(); // to access qml-s properties
+	wsServer->setQmlObject(mainQml);
+	/*mainQml->setProperty("clientsCount",8);
+	mainQml->setProperty("attention1",0.25);*/
 
-	//mainQml->setProperty("clientsCount",0);
 
-
-
-
-//	QObject::connect(wsServer,SIGNAL(newMessage(QString)),&cs,SLOT(handleMessage(QString)) );
-//	QObject::connect(&cs, SIGNAL(sendNewPattern(int)), wsServer, SLOT(setFreeToPlay(int)));
-//	QObject::connect(wsServer, SIGNAL(newPropertyValue(QString,double)), &cs, SLOT(handleChannelChange(QString,double)));
-//	QObject::connect(wsServer, SIGNAL(newCodeToComplie(QString)) , &cs, SLOT(compileOrc(QString)));
 
     return app.exec();
 }
