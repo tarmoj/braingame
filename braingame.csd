@@ -418,11 +418,12 @@ schedule -nstrnum("syi_mixer"),0,-1 ; turn off
 */
 
 
+;; ENRICO
 
-
-; schedule "enrico",0,5
+; schedule "enrico",0,25
 ; schedule  -nstrnum("enrico"),0,0
 giSine =  -1
+gkLevelEnrico init 0.5
 ;=============================
 instr enrico	; brain sing
 ;=============================
@@ -499,7 +500,7 @@ afx = afx * asig
 afx		=	(afx * kdrywet) + (asig  * kamountInv)
 asig = (afx * akenv) + (akenvinv * asig)
 
-outs asig *.7, asig *.7
+outs asig *.7 * gkLevelEnrico, asig *.7 * gkLevelEnrico
 
 endin
 
@@ -522,6 +523,7 @@ kenv linenr 0dbfs*p5*0.001,1,0.1,0.01
 endin
 
 ;schedule "V100",0,-1
+; schedule -nstrnum("V100"),0,0
 instr V100 ; central control & mix
 prints "V100"
 khb1 chnget "hb1"
@@ -624,6 +626,738 @@ schedule 18, 1, -1
 
 ;; End Oeyvind event control *********
 
+
+
+;; GLEB
+
+
+
+gaMixL init 0
+
+gaMixR init 0
+
+gaDelL init 0
+
+gaDelR init 0
+
+gaRevL init 0
+
+gaRevR init 0
+
+gaMixLO init 0
+
+gaMixRO init 0
+
+
+
+gkAtt init 0
+
+gkDec init 0
+
+gkFun init 0
+
+gkRes init 0
+
+gkAvg init 0
+
+gkDev init 0
+
+gkMod init 0
+
+gkOff init 0
+
+gkPan init 0
+
+gkLFO init 0
+
+
+
+instr 3301 ; was 1
+
+kIter init 0
+
+gkNumV init 81 ; please review how you would like to use it! orig: ;invalue "NVoices"
+
+gkNumV = int(gkNumV)
+
+;Sval1 sprintfk "%d", kNumV
+
+;outvalue "display1", Sval1
+
+kseed rand .5, .5
+
+
+
+if kIter == gkNumV kgoto halt
+
+	if (gkNumV > kIter) then
+
+		kIter += 1
+
+		event "i", 3302+kIter*0.01, 0, -1, kIter,kseed+.5
+
+	elseif (gkNumV < kIter) then
+
+		event "i", -(3302+kIter*0.01), 0, 0
+
+		kIter -= 1
+
+	endif
+
+halt:
+
+
+
+endin
+
+
+
+instr 3302
+
+atrig gausstrig p4/100, gkAvg, gkDev, 0
+
+ktrig downsamp atrig, ksmps
+
+if (ktrig != 0) then 
+
+	event "i", -3303, 0, 1, 1 
+
+	event "i", 3303, 0, -1, gkFun*(p4+gkOff)
+
+endif
+
+endin
+
+
+
+instr 3303
+
+
+
+k1 	linsegr 0, i(gkAtt), 1, i(gkDec), 0, i(gkDec), 0
+
+
+
+a1 	rand 1
+
+aout resonx a1*k1*k1, p4*2^((k1*gkMod)/12), gkRes*p4, 2,1
+
+aL = aout*sqrt(gkLFO)
+
+aR = aout*sqrt(1-gkLFO)
+
+;outs aL,aR
+
+gaMixL += aL
+
+gaMixR += aR
+
+endin
+
+
+
+instr 3398 ;Delay
+
+gkFeed	init 0.38;invalue "DelFeed"
+
+gkTime	init 0.14 ;invalue "DelTime"
+
+abu1 	delayr 1
+
+atapL 	deltap gkTime
+
+		delayw gaDelL+atapL*gkFeed
+
+
+
+abu2 	delayr 1
+
+atapR 	deltap gkTime*1.001
+
+		delayw gaDelR+atapR*gkFeed
+
+		
+
+		;outs atapL, atapR
+
+gaMixLO += atapL
+
+gaMixRO += atapR
+
+gaRevL += atapL
+
+gaRevR += atapR
+
+gaDelL = 0
+
+gaDelR = 0
+
+endin
+
+
+
+instr 3399 ;Reverb
+
+gkSize init 0.98;invalue "RevSize"
+
+;gkSize test 0
+
+aL, aR reverbsc gaRevL, gaRevR, gkSize, 8000
+
+;aL, aR reverbsc gaRevL, gaRevR, 0.1, 8000
+
+;outs aL, aR
+
+gaMixLO += aL
+
+gaMixRO += aR
+
+gaRevL = 0
+
+gaRevR = 0
+
+endin
+
+
+
+instr 3390 ; Master
+
+gkRevSend  init 0.94 ;invalue "RevSend"
+
+gkDelSend init 0.36;invalue "DelSend"
+
+gkGain  init 0.3;1.42; invalue "knob3"
+
+kGain port gkGain,0.02,i(gkGain)
+
+gaMixL *= kGain
+
+gaMixR *= kGain
+
+
+
+gaDelL += gaMixL*gkDelSend
+
+gaDelR += gaMixR*gkDelSend
+
+gaRevR += gaMixL*gkRevSend
+
+gaRevR += gaMixR*gkRevSend
+
+aL = gaMixL+gaMixLO
+
+aR = gaMixR + gaMixRO
+
+aL1 limit aL, -0.99, 0.99
+
+aR1 limit aR, -0.99, 0.99
+
+outs aL1,aR1
+
+gaMixLO = 0
+
+gaMixRO = 0
+
+gaMixL = 0
+
+gaMixR = 0
+
+endin
+
+
+
+instr 3391 ; GLOBAL CONTROLS
+
+gkAtt chnget "attention1"
+
+gkAtt = abs(1-gkAtt)*2
+
+
+
+gkDec chnget "attention2"
+
+gkDec = abs(1-gkDec)*2
+
+
+
+gkFun init 122.7 ;invalue "knob20"
+
+
+
+gkRes chnget "attention3"
+
+gkRes = 0.75*abs(gkRes)
+
+gkAvg init 0.1;invalue "GausMean"
+
+gkDev init 0.36 ;invalue "GausDev"
+
+gkMod init 2
+
+gkOff init 2.6 ;invalue "Offset"
+
+gkPan init 0.1;invalue "PanRate"
+
+k2 	randh 1, 0.5
+
+gkLFO oscil 1, gkPan*(1+k2),1,i(k2)
+
+endin
+
+
+
+
+
+;; GLEB starter
+
+giTableGleb ftgen 1, 0, 2^10, 7, 0, 2^9, 1, 2^9, 0
+
+
+
+;
+
+
+
+; re-evaluate globals to change sound:
+
+; gkRevSend  init 0.94
+
+; gkDelSend init 0.36
+
+
+
+; etc, copy here more, if you want
+
+
+
+; evaluate this line to start
+
+; schedule "glebStarter",0,900 ; runs for 20 seconds
+
+; schedule -nstrnum("glebStarter"),0,0 ; evalutate to stop
+
+; gkGain  init 0.3
+
+; gkGain  init 0.05 ; soft
+
+; gkGain  init 0.3 ; no sound
+
+instr glebStarter
+
+
+
+schedule 3301, 0, p3
+
+schedule 3390, 0, p3 ; Master
+
+schedule 3391, 0, p3; Globals
+
+schedule 3398, 0, p3 ; Delay
+
+schedule 3399, 0, p3 ; Reverb
+
+endin
+
+;; JOHN
+ ;; GLOBALS
+    gkBeatsPerSecond1 init 1
+    gkBeatsPerSecond2 init 0.5
+    gkBeatsPerSecond3 init 0.333
+
+    gkBaseAmp1 init 0.333
+    gkBaseAmp2 init 0.5
+    gkBaseAmp3 init 0.999
+
+    gkInstrumentOffset init 230
+
+    gkInstrument1 init 230
+    gkInstrument2 init 233
+    gkInstrument3 init 236
+
+    gkDuration init 0.5
+
+    ; for better random
+    seed    0
+    
+    ; set to 0 (zero) for performance, 1 for debugging
+    gkDebug init 0
+
+    ;; schedules
+    ; run for 16 seconds
+    ;schedule "jsTrigger", 0, 16
+    ; run indefinitely
+    
+    ;schedule "jsTrigger", 0, -1 
+    ; stop
+    ;schedule -1, 0, 0 
+    
+    ; emulator: comment out for performance
+    ;schedule  "emulate", 0, -1 
+
+    
+    ;; CONTROL INSTRUMENTS
+    instr jsTrigger
+      kTrig1 metro  gkBeatsPerSecond1
+      kTrig2 metro  gkBeatsPerSecond2
+      kTrig3 metro  gkBeatsPerSecond3
+      if kTrig1 == 1 then
+        event   "i", "jsGenerator1", 0, gkDuration
+      endif
+      if kTrig2 == 1 then
+        event   "i", "jsGenerator2", 0, gkDuration
+      endif
+      if kTrig3 == 1 then
+        event   "i", "jsGenerator3", 0, gkDuration
+      endif
+    endin
+    
+    ;; sensor set 1
+    ; all instruments, quickly changing
+    instr jsGenerator1
+      ;; raw data used for timing offset
+      kRaw chnget "raw1"
+      kRawAbs = abs( kRaw )
+      if kRawAbs > 200 then
+        kRawAbs = 200
+      endif
+      kRawAbsHalf = kRawAbs / 2.0
+      kOffset = kRawAbsHalf / 100.0
+      if kOffset > 0.999 then
+        kOffset = 0.999
+      elseif kOffset < 0.0 then
+        kOffset = 0.0
+      endif  
+
+      ;; attention data used for volume
+      kAttention chnget "attention1"
+      kAmp = gkBaseAmp1 * kAttention
+      if kAmp > 0.999 then
+        kAmp = 0.999
+      elseif kAmp < 0.001 then
+        kAmp = 0.001
+      endif
+
+      ;; hb and lb data added to determine percussive items
+      kNumH chnget "hb1"
+      kNumL chnget "lb1"
+      kNumTotal = kNumH + kNumL
+      kNum = kNumTotal * 10
+
+      ; paranoia
+      kNumInt = int( kNum )
+     
+      ;; instrument changes
+      kInstrument = gkInstrument1
+      kInstrumentChange random  0, 1
+      if kInstrumentChange < 0.8 then
+        kRnd    random  0, 7
+        kRndInt = int( kRnd )
+        kInstrument = kRndInt + gkInstrumentOffset
+
+        ; update global
+        gkInstrument1 = kInstrument
+      endif
+
+      kStereoOffset = 0.5
+
+      if gkDebug == 1 then
+        printf "1. kInstrument: '%d'\n", 1, kInstrument
+        printf "1. kOffset: '%f'\n", 1, kOffset
+        printf "1. kAmp: '%f'\n", 1, kAmp
+        printf "1. kNumInt: '%d'\n", 1, kNumInt
+        printf "1. kStereoOffset: '%f'\n", 1, kStereoOffset
+      endif
+
+      kTrig metro  gkBeatsPerSecond1
+      if kTrig == 1 then
+        event   "i", kInstrument, kOffset, gkDuration, kAmp, kNumInt, kStereoOffset
+      endif
+    endin
+
+    ;; sensor set 2
+    ; half of instruments, moderate change rate between them
+    ; more L in stereo
+    instr jsGenerator2
+      kRaw chnget "raw2"
+      kRawAbs = abs( kRaw )
+      if kRawAbs > 200 then
+        kRawAbs = 200
+      endif
+      kRawAbsHalf = kRawAbs / 2.0
+      kOffset = kRawAbsHalf / 100.0
+      if kOffset > 0.999 then
+        kOffset = 0.999
+      elseif kOffset < 0.0 then
+        kOffset = 0.0
+      endif  
+
+      kAttention chnget "attention2"
+      kAmp = gkBaseAmp2 * kAttention
+      if kAmp > 0.999 then
+        kAmp = 0.999
+      elseif kAmp < 0.001 then
+        kAmp = 0.001
+      endif
+
+      kNumH chnget "hb2"
+      kNumL chnget "lb2"
+      kNumTotal = kNumH + kNumL
+      kNum = kNumTotal * 10
+      kNumInt = int( kNum )
+     
+      kInstrument = gkInstrument2
+      kInstrumentChange random  0, 1
+      if kInstrumentChange < 0.5 then
+        kRnd    random  0, 4
+        kRndInt = int( kRnd )
+        kInstrument = kRndInt + gkInstrumentOffset
+        gkInstrument2 = kInstrument
+      endif
+
+      kStereoOffset random  0, 1
+      if kStereoOffset > 0.5 then
+        kStereoOffset = 1.0 - kStereoOffset
+      endif
+
+      if gkDebug == 1 then
+        printf "2. kInstrument: '%d'\n", 1, kInstrument
+        printf "2. kOffset: '%f'\n", 1, kOffset
+        printf "2. kAmp: '%f'\n", 1, kAmp
+        printf "2. kNumInt: '%d'\n", 1, kNumInt
+        printf "2. kStereoOffset: '%f'\n", 1, kStereoOffset
+      endif
+
+      kTrig metro  gkBeatsPerSecond2
+      if kTrig == 1 then
+        event   "i", kInstrument, kOffset, gkDuration, kAmp, kNumInt, kStereoOffset
+      endif
+    endin
+
+    ;; sensor set 3
+    ; other half of instruments, slow changing of instruments
+    ; more R in stereo
+    instr jsGenerator3
+      kRaw chnget "raw3"
+      kRawAbs = abs( kRaw )
+      if kRawAbs > 200 then
+        kRawAbs = 200
+      endif
+      kRawAbsHalf = kRawAbs / 2.0
+      kOffset = kRawAbsHalf / 100.0
+      if kOffset > 0.999 then
+        kOffset = 0.999
+      elseif kOffset < 0.0 then
+        kOffset = 0.0
+      endif  
+
+      kAttention chnget "attention3"
+      kAmp = gkBaseAmp3 * kAttention
+      if kAmp > 0.999 then
+        kAmp = 0.999
+      elseif kAmp < 0.001 then
+        kAmp = 0.001
+      endif
+
+      kNumH chnget "hb3"
+      kNumL chnget "lb3"
+      kNumTotal = kNumH + kNumL
+      kNum = kNumTotal * 10
+      kNumInt = int( kNum )
+     
+      kInstrument = gkInstrument3
+      kInstrumentChange random  0, 1
+      if kInstrumentChange < 0.333 then
+        kRnd    random  0, 4
+        kRndInt = int( kRnd )
+        
+        ; use a different subset
+        if kRndInt != 0 then
+          kRndInt = kRndInt + 3
+        endif  
+        kInstrument = kRndInt + gkInstrumentOffset
+        gkInstrument3 = kInstrument
+      endif
+
+      kStereoOffset random  0, 1
+      if kStereoOffset < 0.5 then
+        kStereoOffset = 1.0 - kStereoOffset
+      endif
+
+      if gkDebug == 1 then
+        printf "3. kInstrument: '%d'\n", 1, kInstrument
+        printf "3. kOffset: '%f'\n", 1, kOffset
+        printf "3. kAmp: '%f'\n", 1, kAmp
+        printf "3. kNumInt: '%d'\n", 1, kNumInt
+        printf "3. kStereoOffset: '%f'\n", 1, kStereoOffset
+      endif
+
+      kTrig metro  gkBeatsPerSecond3
+      if kTrig == 1 then
+        event   "i", kInstrument, kOffset, gkDuration, kAmp, kNumInt, kStereoOffset
+      endif
+    endin
+    
+    
+    ;; SOUNDING INSTRUMENTS
+    ; silent
+    instr 230
+      iAmp = p4 * 0
+      iCps = p5 * 0
+      iR = p6 * 0
+
+      aSig  oscil   iAmp, iCps
+        outs    aSig, aSig
+    endin
+
+
+    ;; kAmp
+    instr 231
+      kAmp = p4
+      iNum = p5
+      iR = p6
+      iL = 1.0 - iR
+
+      aSig  bamboo  kAmp, 4, iNum
+        outs    aSig * iL, aSig * iR
+    endin
+
+    instr 232
+      kAmp = p4
+      iNum = p5
+      iR = p6
+      iL = 1.0 - iR
+
+      aSig  dripwater   kAmp, 4, iNum
+        outs    aSig * iL, aSig * iR
+    endin
+    
+    instr 233
+      kAmp = p4
+      iNum = p5
+      iR = p6
+      iL = 1.0 - iR
+
+      aSig  guiro   kAmp, 4, iNum
+        outs    aSig * iL, aSig * iR
+    endin
+
+    instr 234
+      kAmp = p4
+      iNum = p5
+      iR = p6
+      iL = 1.0 - iR
+
+      aSig  sleighbells  kAmp, 4, iNum
+        outs    aSig * iL, aSig * iR
+    endin
+
+    instr 235
+      kAmp = p4
+      iNum = p5
+      iR = p6
+      iL = 1.0 - iR
+
+      aSig  tambourine  kAmp, 4, iNum
+        outs    aSig * iL, aSig * iR
+    endin
+
+    ;; iAmp
+    instr 236
+      iAmp = p4
+      iNum = p5 * 32
+      iR = p6
+      iL = 1.0 - iR
+
+      aSig  cabasa  iAmp, 4, iNum
+        outs    aSig * iL, aSig * iR
+    endin
+    
+    instr 237
+      iAmp = p4
+      iNum = p5
+      iR = p6
+      iL = 1.0 - iR
+
+      aSig  crunch  iAmp, 4, iNum
+        outs    aSig * iL, aSig * iR
+    endin
+
+    
+; END_JOHN
+
+;; JOACHIM
+giSamp ftgen 0, 0, 0, 1, "GD4_457Hz_1min.wav", 0, 0, 0
+
+
+;schedule "joachim",0,10
+; scheule "joachim", -1,0
+; schedule -nstrnum("joachim"),0,0
+
+gkLevelJoachim init 0.5
+
+instr joachim
+/*uses three input channels (all 0..1): attention1, hb1, lb1:
+- attention1 is applied to the ambitus of the sound (0 = large, 1 = small ambitus)
+- hb1 is applied to the internal movement of the sound (0 = calme, 1 = unquiet)
+- lb1 is applied to the pitch / register (0 = low, 1 = middle)
+AS I DO NOT KNOW THE REAL MEANING OF THE BRAIN SENSOR PARAMETERS, 
+IT MIGHT BE NECESSARY TO CHANGE THE CONNECTION BETWEEN INPUT CHANNEL 
+AND INFLUENCE ON THE SOUND TO GET A GOOD PERCEPTIONAL FEEDBACK!
+*/
+
+;get input channels
+kAtt chnget "attention1"
+kHb1 chnget "hb1"
+kLb1 chnget "lb1"
+
+;smooth if necessary
+kHb1 port   kHb1, 1
+
+;adapt
+kCentDev = kHb1 * 100
+kCenterPitch = -((1-kLb1) * 1800 + 1200) ;cent
+kAmbitus = (1-kAtt) * 1200 + 600 ;cent
+
+;set channels
+chnset kCentDev, "jo_sub_CentDev"
+chnset kCenterPitch, "jo_sub_CenterPitch"
+chnset kAmbitus, "jo_sub_Ambitus"
+
+;start subinstruments
+iNumToene = 19
+if metro(1/(iNumToene*.2)) == 1 then
+  kIndx = 0
+  while kIndx < iNumToene/3 do
+    event "i", "jo_sub", 0, iNumToene
+    kIndx += 1
+  od
+endif
+;schedkwhen metro(1), 0, iNumToene, "jo_sub", 0, iNumToene
+kNum active "jo_sub"
+;printk2 kNum
+endin
+
+instr jo_sub
+
+;receive inputs
+iCenterPitch chnget "jo_sub_CenterPitch"
+iAmbitus chnget "jo_sub_Ambitus"
+kCentDev chnget "jo_sub_CentDev"
+;print iCenterPitch, iAmbitus
+;printk 1, kCentDev
+
+iCent random iCenterPitch-iAmbitus, iCenterPitch+iAmbitus
+kCentVar randomi -kCentDev, kCentDev, .5, 3
+kMult = cent(iCent+kCentVar)
+kDb randomi -30, -18, .3, 3
+aTon poscil3 ampdb(kDb), kMult/(ftlen(giSamp)/sr), giSamp, random:i(.1, .2)
+iFadIn random p3/5, p3/2
+iFadOut random p3/5, p3/2
+kEnv transeg 0, iFadIn, 3, 1, p3-iFadIn-iFadOut, 0, 1, iFadOut, -3, 0
+kPan randomi 0, 1, .2, 3
+aL, aR pan2 aTon*kEnv*gkLevelJoachim, kPan
+outs aL, aR
+endin
 
 </CsInstruments>
 <CsScore>

@@ -3,10 +3,11 @@ import QtQuick.Controls 1.2
 
 ApplicationWindow {
     visible: true
-    width: 800
-    height: 600
+    width: 860
+    height: 720
     title: qsTr("Brainwave UI")
     property int clientsCount: 0
+    property int fontsize: 14
 
     Connections {
                 target: wsServer
@@ -17,7 +18,7 @@ ApplicationWindow {
                 onNewMessage: {
                     console.log("Message came in: ",messageString, "from: ",name);
 
-                    messageArea.text +=  name + " says: " + messageString + "\n";
+                    messageArea.text += "<b>" + name + " says:</b> " + messageString + "\n";
                     messageArea.cursorPosition = messageArea.length;
 
                 }
@@ -36,6 +37,10 @@ ApplicationWindow {
         width: 800
         height: 600
         color: "#cdf505"
+        anchors.rightMargin: 0
+        anchors.bottomMargin: 0
+        anchors.leftMargin: 0
+        anchors.topMargin: 0
         gradient: Gradient {
             GradientStop {
                 position: 0
@@ -50,33 +55,39 @@ ApplicationWindow {
         anchors.fill: parent
         Label {
             id:clientsCountLabel
-            x: 44
-            y: 8
+            x: 16
+            y: 16
+            text: "Csounders: 0"
             //color: "#ffff00"
-            text: qsTr("Clients: " + clientsCount)
+            font.pointSize: fontsize
         }
         Label {
             id: label1
-            x: 44
-            y: 28
-            text: qsTr("Messages")
+            x: 15
+            y: 52
+            text: qsTr("Sõnumid")
+            font.pointSize: fontsize
         }
 
         TextArea {
             id: messageArea
-            x: 44
-            y: 48
-            width: 250
-            height: 522
+            textFormat: TextEdit.RichText
+            x: 15
+            y: 79
+            width: 368
+            height: 612
             readOnly: true
             wrapMode: TextEdit.WordWrap
+            font.pointSize: 10
         }
 
         Label {
             id: label2
-            x: 305
+            x: 546
             y: 16
-            text: qsTr("Sensors:")
+            text: qsTr("Andrurid")
+            font.bold: true
+            font.pointSize: fontsize
         }
 
         Grid {
@@ -91,46 +102,45 @@ ApplicationWindow {
              // TODO: use repeater or similar. Now bad code.
             Meter {
                 id:attention1
-                meterColor: "orange"
+                meterColor: "#CD0000" // red, darker and darker red
                 objectName: "attention1"
-                level: 0
             }
 
             Meter {
                 id:hb1
-                meterColor: "darkorange"
+                meterColor: "#AE0000"
                 objectName: "hb1"
-                level: 0
+
             }
 
             Meter {
                 id:lb1
-                meterColor: "yellow"
+                meterColor: "#8A0000"
                 objectName: "lb1"
-                level: 0
+
             }
 
             Item {width:lb1.width; height: lb1.height}
             //2
             Meter {
                 id:attention2
-                meterColor: "orange"
+                meterColor: "#CD0000"
                 objectName: "attention2"
-                level: 0
+
             }
 
             Meter {
                 id:hb2
-                meterColor: "darkorange"
+                meterColor: "#AE0000"
                 objectName: "hb2"
-                level: 0
+
             }
 
             Meter {
                 id:lb2
-                meterColor: "yellow"
+                meterColor: "#8A0000"
                 objectName: "lb2"
-                level: 0
+
             }
 
             Item {width:lb1.width; height: lb1.height}
@@ -138,23 +148,23 @@ ApplicationWindow {
             //3
             Meter {
                 id:attention3
-                meterColor: "orange"
+                meterColor: "#CD0000"
                 objectName: "attention3"
-                level: 0
+
             }
 
             Meter {
                 id:hb3
-                meterColor: "darkorange"
+                meterColor: "#AE0000"
                 objectName: "hb3"
-                level: 0
+
             }
 
             Meter {
                 id:lb3
-                meterColor: "yellow"
+                meterColor: "#8A0000"
                 objectName: "lb3"
-                level: 0
+
             }
 
 
@@ -182,33 +192,82 @@ ApplicationWindow {
         Meter {
             id: gsr1
             objectName: "skin1"
-            meterColor: "darkred"
-            animationDuration: 100
-            x: 311
-            y: 274
+            meterColor: "#A10048"
+            animationDuration: 250
+            x: 493
+            y: 419
         }
 
         Meter {
-            id: meter2
+            id: gsr2
             objectName: "skin2"
-            meterColor: "red"
-            animationDuration: 100
-            x: 435
-            y: 275
+            meterColor: "#740034"
+            animationDuration: 250
+            x: 725
+            y: 419
         }
 
         Label {
             id: label3
-            x: 311
-            y: 431
-            text: qsTr("GSR1")
+            x: 430
+            y: 517
+            text: qsTr("Merje")
+            font.pointSize: 12
+            font.bold: true
         }
 
         Label {
             id: label4
-            x: 435
-            y: 431
-            text: qsTr("GSR2")
+            x: 632
+            y: 517
+            text: qsTr("Vambola")
+            font.bold: true
+            font.pointSize: 12
+        }
+
+        Label {
+            id: label5
+            x: 399
+            y: 52
+            text: qsTr("Aju:")
+            font.pointSize: 14
+            font.italic: true
+        }
+
+        Label {
+            id: label6
+            x: 390
+            y: 387
+            text: qsTr("Nahajuhtivus:")
+            font.pointSize: 14
+            font.italic: true
+        }
+
+        Label {
+            id: label7
+            x: 427
+            y: 350
+            text: qsTr("Helena")
+            font.bold: true
+            font.pointSize: 12
+        }
+
+        Label {
+            id: label8
+            x: 596
+            y: 350
+            text: qsTr("Levi")
+            font.bold: true
+            font.pointSize: 12
+        }
+
+        Label {
+            id: label9
+            x: 750
+            y: 350
+            text: qsTr("Taavi")
+            font.pointSize: 12
+            font.bold: true
         }
 
         /*

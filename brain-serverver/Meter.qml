@@ -2,8 +2,8 @@ import QtQuick 2.0
 
 Rectangle  {
     id: meterRect
-    width: 25
-    height: 150
+    width: 35
+    height: 250
     color: "transparent"
     border.color: "black"
     property color meterColor: border.color
@@ -31,7 +31,7 @@ Rectangle  {
         anchors.bottomMargin: parent.border.width
         color: parent.meterColor
         width: parent.width-2*parent.border.width
-        height: parent.level*parent.height
+        height: parent.level*(parent.height-2*parent.border.width)
     }
 
 

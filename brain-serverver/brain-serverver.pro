@@ -14,8 +14,6 @@ QML_IMPORT_PATH =
 # Default rules for deployment.
 include(deployment.pri)
 
-OTHER_FILES += \
-    Meter.qml
 
 HEADERS += \
     csengine.h \

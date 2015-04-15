@@ -118,8 +118,8 @@ void WsServer::socketDisconnected()
 
 void WsServer::handleSensorValue(QString sensor, double value)
 {
-	if (sensor.startsWith("attention") || sensor.startsWith("lb") || sensor.startsWith("hb") ||sensor.startsWith("skin") )
-		sendToAll("sensor@ " + sensor + "@"+QString::number(value));
+//	if (sensor.startsWith("attention") || sensor.startsWith("lb") || sensor.startsWith("hb") ||sensor.startsWith("skin") )
+//		sendToAll("sensor@ " + sensor + "@"+QString::number(value)); // don't send - it chokes the browser
 	//emit forwardSensorValue(sensor,value); // send to qml
 	if (qmlObject) {
 		QObject * item = qmlObject->findChild<QObject*>(sensor);
