@@ -12,7 +12,7 @@ ApplicationWindow {
     Connections {
                 target: wsServer
                 onNewConnection: {
-                   //console.log(connectionsCount)
+                   //console.log("QML connections: ",connectionsCount)
                    clientsCount = connectionsCount;
                   }
                 onNewMessage: {
@@ -57,7 +57,8 @@ ApplicationWindow {
             id:clientsCountLabel
             x: 16
             y: 16
-            text: "Csounders: 0"
+            text: "Csounders: "+clientsCount
+            visible: tru
             //color: "#ffff00"
             font.pointSize: fontsize
         }
@@ -65,7 +66,7 @@ ApplicationWindow {
             id: label1
             x: 15
             y: 52
-            text: qsTr("Sõnumid")
+            text: qsTr("Messages")
             font.pointSize: fontsize
         }
 
@@ -85,7 +86,7 @@ ApplicationWindow {
             id: label2
             x: 546
             y: 16
-            text: qsTr("Andrurid")
+            text: qsTr("Sensors")
             font.bold: true
             font.pointSize: fontsize
         }
@@ -229,7 +230,7 @@ ApplicationWindow {
             id: label5
             x: 399
             y: 52
-            text: qsTr("Aju:")
+            text: qsTr("Brain:")
             font.pointSize: 14
             font.italic: true
         }
@@ -238,7 +239,7 @@ ApplicationWindow {
             id: label6
             x: 390
             y: 387
-            text: qsTr("Nahajuhtivus:")
+            text: qsTr("GSR:")
             font.pointSize: 14
             font.italic: true
         }

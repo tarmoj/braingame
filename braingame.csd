@@ -18,7 +18,7 @@ ksmps = 32
 ; skin conductance: (scaled to 0..1) - skin1, skin2 - not TESTED YET!
 
 
-schedule  "emulate",0, -1 ; mimics the sensors. comment out for performance! 
+;schedule  "emulate",0, -1 ; mimics the sensors. comment out for performance! 
 instr emulate 
 	katn1 = 0.5 + jspline:k(0.5,0.1,5)
 	khb1 = 0.5 + jspline:k(0.5,0.1,5)
