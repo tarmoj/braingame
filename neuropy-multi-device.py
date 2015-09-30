@@ -21,7 +21,7 @@ class BrainWindow(QWidget):
 		super(BrainWindow, self).__init__(parent)
 		
 		self.sensorNUmber = sensorNUmber
-		self.setWindowTitle(u"Mindwave"+str(self.sensorNUmber))
+		self.setWindowTitle(u"Mindwave "+str(self.sensorNUmber+1))
 		
 		layout = QGridLayout()
 		layout.addWidget(QLabel("Value"),0,1)
@@ -218,8 +218,9 @@ class BrainWindow(QWidget):
 		self.poorSignalLabel.setText(str(value))
 
 def sendUdpMessage(message):
+	#print message
 	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	sock.sendto(message, ("192.168.1.201", 7077))
+	sock.sendto(message, ("192.168.1.67", 7077))
 
 if __name__ == "__main__":
 	print "Hello"

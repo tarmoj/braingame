@@ -58,7 +58,7 @@ ApplicationWindow {
             x: 16
             y: 16
             text: "Csounders: "+clientsCount
-            visible: tru
+            visible: true
             //color: "#ffff00"
             font.pointSize: fontsize
         }
@@ -190,29 +190,56 @@ ApplicationWindow {
 
         }
 
-        Meter {
-            id: gsr1
-            objectName: "skin1"
-            meterColor: "#A10048"
-            animationDuration: 250
-            x: 493
-            y: 419
-        }
 
-        Meter {
-            id: gsr2
-            objectName: "skin2"
-            meterColor: "#740034"
-            animationDuration: 250
-            x: 725
-            y: 419
+        Label {
+            id: heartRate1
+            objectName: "heart1"
+            property double level: 0
+            x: 492
+            y: 500
+            font.pointSize: 32
+            font.bold: true
+            color: Qt.rgba(0.1+level/150.0,0,0,1) // the higher the rate, the more red it gets
+            horizontalAlignment: Text.AlignHCenter
+            text: level.toFixed(0)
         }
 
         Label {
+            id: heartRate2
+            objectName: "heart2"
+            property double level: 0
+            x: 707
+            y: 500
+            font.pointSize: 32
+            font.bold: true
+            color: Qt.rgba(0.1+level/150.0,0,0,1) // the higher the rate, the more red it gets
+            horizontalAlignment: Text.AlignHCenter
+            text: level.toFixed(0)
+        }
+
+//        Meter { // for skind conductance
+//            id: gsr1
+//            objectName: "skin1"
+//            meterColor: "#A10048"
+//            animationDuration: 250
+//            x: 493
+//            y: 419
+//        }
+
+//        Meter {
+//            id: gsr2
+//            objectName: "skin2"
+//            meterColor: "#740034"
+//            animationDuration: 250
+//            x: 725
+//            y: 419
+//        }
+
+        Label {
             id: label3
-            x: 430
+            x: 413
             y: 517
-            text: qsTr("Merje")
+            text: qsTr("Pulse 1")
             font.pointSize: 12
             font.bold: true
         }
@@ -221,7 +248,7 @@ ApplicationWindow {
             id: label4
             x: 632
             y: 517
-            text: qsTr("Vambola")
+            text: qsTr("Pulse 2")
             font.bold: true
             font.pointSize: 12
         }
@@ -239,7 +266,7 @@ ApplicationWindow {
             id: label6
             x: 390
             y: 387
-            text: qsTr("GSR:")
+            text: qsTr("Heart rate:")
             font.pointSize: 14
             font.italic: true
         }
@@ -248,7 +275,7 @@ ApplicationWindow {
             id: label7
             x: 427
             y: 350
-            text: qsTr("Helena")
+            text: qsTr("Brain 1")
             font.bold: true
             font.pointSize: 12
         }
@@ -257,7 +284,7 @@ ApplicationWindow {
             id: label8
             x: 596
             y: 350
-            text: qsTr("Levi")
+            text: qsTr("Brain 2")
             font.bold: true
             font.pointSize: 12
         }
@@ -266,7 +293,7 @@ ApplicationWindow {
             id: label9
             x: 750
             y: 350
-            text: qsTr("Taavi")
+            text: qsTr("Brain 3")
             font.pointSize: 12
             font.bold: true
         }

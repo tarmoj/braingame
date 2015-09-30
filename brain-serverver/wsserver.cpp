@@ -23,7 +23,7 @@ WsServer::WsServer(quint16 port, QObject *parent) :
                 this, &WsServer::onNewConnection);
         connect(m_pWebSocketServer, &QWebSocketServer::closed, this, &WsServer::closed);
     }
-    cs = new CsEngine("../braingame.csd"); cs->start();
+	cs = new CsEngine("../braingame-blank-icsc.csd"); cs->start();
 	QObject::connect(cs,SIGNAL(newSensorValue(QString,double)),this, SLOT(handleSensorValue(QString,double)));
 	qmlObject = NULL;
 
@@ -118,9 +118,6 @@ void WsServer::socketDisconnected()
 
 void WsServer::handleSensorValue(QString sensor, double value)
 {
-//	if (sensor.startsWith("attention") || sensor.startsWith("lb") || sensor.startsWith("hb") ||sensor.startsWith("skin") )
-//		sendToAll("sensor@ " + sensor + "@"+QString::number(value)); // don't send - it chokes the browser
-	//emit forwardSensorValue(sensor,value); // send to qml
 	if (qmlObject) {
 		QObject * item = qmlObject->findChild<QObject*>(sensor);
 		if (item)
@@ -151,7 +148,6 @@ void WsServer::sendMessage(QWebSocket *socket, QString message )
 void WsServer::setQmlObject(QObject *object)
 {
 	qmlObject = object;
-	//csdText = qmlObject->findChild<QObject*>("csdText"); // must be set in qml as property objectName: "csdText"
 }
 
 

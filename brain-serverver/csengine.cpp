@@ -42,7 +42,6 @@ void CsEngine::readyRead()
 		double value =  messageParts[2].toDouble();
 		setChannel(sensor,value);
 		emit newSensorValue(sensor,value);
-        //TODO: send to qml meters
     }
 
 }

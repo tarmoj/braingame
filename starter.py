@@ -9,19 +9,23 @@ import sys, subprocess
 
 def start1():
 	print "Starting Neuropy1"
-	subprocess.call(["python", "neuropy-multi-device.py", "0"])
+	subprocess.Popen(["python", "neuropy-multi-device.py", "0"])
 	
 def start2():
 	print "Starting Neuropy2"
-	subprocess.call(["python", "neuropy-multi-device.py", "0"])
+	subprocess.Popen(["python", "neuropy-multi-device.py", "1"])
 	
 def start3():
 	print "Starting Neuropy3"
-	subprocess.call(["python", "neuropy-multi-device.py", "0"])
+	subprocess.Popen(["python", "neuropy-multi-device.py", "2"])
 	
 def startSkin():
 	print "Starting Skin"
-	subprocess.call(["python", "gsr-arduino.py"])
+	subprocess.Popen(["python", "gsr-arduino.py"])
+	
+def startEmualtion():
+	print "Starting Skin emulation"
+	subprocess.Popen(["csound", "sensors-emulator-skin.csd"])
 
 app = QApplication(sys.argv)
 
@@ -36,6 +40,7 @@ layout.addWidget(QLabel("Neuropy 1 Helena"),0,0)
 layout.addWidget(QLabel("Neuropy 2 Taavi"),1,0)
 layout.addWidget(QLabel("Neuropy 3 Vambola"),2,0)
 layout.addWidget(QLabel("Arduino (skin)"),3,0)
+layout.addWidget(QLabel("Fake (skin)"),4,0)
 
 startButton1 = QPushButton("Start")
 startButton1.clicked.connect(start1)
@@ -52,6 +57,10 @@ layout.addWidget(startButton3,2,1)
 startButton4 = QPushButton("Start")
 startButton4.clicked.connect(startSkin)
 layout.addWidget(startButton4,3,1)
+
+emulateSkin = QPushButton("Emulate")
+emulateSkin.clicked.connect(startEmualtion)
+layout.addWidget(emulateSkin,4,1)
 
 window.show()
 
