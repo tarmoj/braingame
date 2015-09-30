@@ -220,7 +220,7 @@ class BrainWindow(QWidget):
 def sendUdpMessage(message):
 	#print message
 	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	sock.sendto(message, ("192.168.1.67", 7077))
+	sock.sendto(message, ("127.0.0.1", 7077))
 
 if __name__ == "__main__":
 	print "Hello"
