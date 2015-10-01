@@ -4,7 +4,7 @@
 	
 	function doConnect()
 	{
-		websocket = new WebSocket(document.myform.url.value);
+		websocket = new WebSocket(document.getElementById("url").value);
 		websocket.onopen = function(evt) { onOpen(evt) };
 		websocket.onclose = function(evt) { onClose(evt) };
 		websocket.onmessage = function(evt) { onMessage(evt) };
@@ -15,26 +15,26 @@
 	function onOpen(evt)
 	{
 		writeToScreen("connected\n");
-		document.myform.connectButton.disabled = true;
-		document.myform.sendButton.disabled = false;
+		document.getElementById('connectButton').disabled = true;
+		document.getElementById('sendButton').disabled = false;
 
 	}
 
 	function onClose(evt)
 	{
 		writeToScreen("state: disconnected\n");
-		document.myform.connectButton.disabled = false;
-		document.myform.sendButton.disabled = true;
+		document.getElementById('connectButton').disabled = false;
+		document.getElementById('sendButton').disabled = true;
 	}
 
 	
 
 	function onError(evt)
 	{
-		writeToScreen('error (' + document.myform.url.value + ') ' + evt.data + '\n');
+		writeToScreen('error (' + document.getElementById("url").value + ') ' + evt.data + '\n');
 		websocket.close();
 		connectButton.disabled = false;
-		document.myform.sendButton.disabled = true;
+		document.getElementById("sendButton").disabled = true;
 	}
 
 	function doSend(message)

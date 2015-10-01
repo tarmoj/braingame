@@ -87,24 +87,24 @@
     document.getElementById('loadButton').innerText = 'load to ./local/' + fname;
   }
 
-   function loadFile(){
+   function loadFile(){ // I think it does not work...
     if(fname != ''){
      csound.CopyUrlToLocal(objectURL, fname);
      document.getElementById('loadButton').innerText = './local/' + fname +
      ' loaded' ;
     }
-   }
+   }  
    
    // UI and other websocket functions
    
 	function send2server(messageType, content) { // type: csound / message /
-		var messageString = messageType + "@" + document.myform.name.value + "@" + content;
+		var messageString = messageType + "@" + document.getElementById('name').value + "@" + content;
 		console.log(messageString);
 		doSend(messageString);
 		
 	}
 	function code2server() {
-		var code = document.myform.code;
+		var code = document.getElementById('code');
 		if (code.selectionStart==code.selectionEnd) // nothing selected - take the whole orchestra
 			alert("Nothing selected!");
 		else {
@@ -113,17 +113,20 @@
 		}
 	}
 
-	
+	var codeStorage;
 
 	window.onload = function(){
-		//var connectButton = document.getElementById("connectButton");
-		//document.myform.sendButton.disabled = true;
-		//suppose localStorage works
+		//suppose localStorage works, don't check
 		var name = localStorage.getItem("brain-client-name");
-		if (name)  { // if not set, generate an uuid for it
+		if (name)  { // if exists, put it into the name field
 			console.log("Stored name: ", name);
-			document.myform.name.value = name;
+			document.getElementById('name').value = name;
 		} 
+		
+		var codeStorage = localStorage.getItem("brain-client-code");
+		if (codeStorage)  // restore the code from last time
+			document.getElementById('code').innerText = codeStorage;
+		
 		
 		
 		doConnect(); // init websocket on start; suppose the server is ready
@@ -162,15 +165,20 @@
   </head>
   <body>
   <h1>Braingame client</h1>
-  <form name="myform">
+  <!--<form name="myform">-->
   Your name: <input type="text" id="name" value="Tarmo" onchange='localStorage.setItem("brain-client-name",this.value);'></input><br>
 	<button type="button" id="playButton">Start Engine</button>
   <button type="button" id="pauseButton">Pause Engine</button> </p>
   Code:<br>
   <p> 
-  <textarea class="code" id="code" cols="80" rows="16">
+  <textarea class="code" id="code" cols="80" rows="16"  oninput='localStorage.setItem("brain-client-code",this.value);'>
 ; copy here your own csd, if you need (load does not work...)
+
+
+; the text written here will be stored in local storage and restored next time you  load the page
+
 ; OR: if you have sent me your instrument, copy here lines that you want to send. For example:
+
 
 ; schedule "tarmo",0,10
 ; gkSpeen init 100
@@ -205,15 +213,20 @@
   <textarea class="code" id="chat" cols="80" rows="4">
   </textarea>
   <br>
-  Sensors:<br>
+  <!--Sensors:<br>
   <textarea class="code" id="sensors" cols="80" rows="4">
-  </textarea><br>
+  </textarea><br>-->
   <br>
-  Message to others (not displayed on big screen)<input type="text" id="message" value="message"></input>
-  <button  type="button" id="sendMessage" onclick='send2server("message",document.myform.message.value);'>Send</button>
+  
+  <form onsubmit='send2server("message",document.getElementById("message").value);' action="javascript:void(0);">
+  Message to others (not displayed on big screen)<input type="text" id="message" placeholder="message to other players"></input>
+  <button  type="button" id="sendMessage" onclick='send2server("message",document.getElementById("message").value);'>Send</button></form>
+  
   <br><br>
-  Message to display (like "Hello" "Please stop" etc)<input type="text" id="comment" value="comment"></input>
-	<button  type="button" id="sendMessage" onclick='send2server("comment",document.myform.comment.value);'>Send</button>	
+   <form onsubmit='send2server("comment",document.getElementById("comment").value);' action="javascript:void(0);">
+  Message to display (like "Hello" "Please stop" etc)<input type="text" id="comment" placeholder="Message displayed in screen for public"></input>
+	<button  type="button" id="sendMessage" onclick='send2server("comment",document.getElementById("comment").value);'>Send</button>
+	</form>
 
 	<br><br>
   
@@ -222,7 +235,7 @@
     <br>
     Messages from WS server and Csound:<br>
     <p><textarea id="outputtext" rows="8" cols="80" readonly></textarea> </p>
-	</form>
+	<!--</form>-->
 	
 	<!--pNaCl csound module-->
   <div id="engine"></div>
